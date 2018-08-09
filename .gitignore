@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+Data
+Data/*
+.csv
+.DS_Store
+*.twbx
+*.twb
