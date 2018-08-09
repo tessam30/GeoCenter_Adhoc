@@ -3,7 +3,7 @@
 # Date: 2018_08_08
 # Load libraries and data -------------------------------------------------
 
-# INSTALL LIBRARIES
+# INSTALL LIBRARIES - if first time, install pacman
 pacman::p_load("tidyverse", "lubridate", "sf", "extrafont", "readxl")
 
 dir.create("Data")
