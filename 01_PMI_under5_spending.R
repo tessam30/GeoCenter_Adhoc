@@ -4,9 +4,11 @@
 
 
 # install.packages("devtools")
-devtools::install_github("murphy-xq/fetchdhs")
+#devtools::install_github("murphy-xq/fetchdhs")
 library(fetchdhs)
 library(purrr)
+library(llamar)
+library(scales)
 source("DHS_country_list.R")
 
 # PUll out all child mortality data for Africa
@@ -77,7 +79,9 @@ fetch_tags()%>%
     # Filter out missing budget data -- cannot calculate a total with this as a character too
     filter(BUDGET != "NULL") %>% 
     # Need to escape the $ sign to remove it, also need to coerce to numeric
-    mutate(budget = as.numeric(gsub('[^0-9.]', '', BUDGET))) 
+    mutate(budget = as.numeric(gsub('[^0-9.]', '', BUDGET))) %>% 
+    filter(!(COUNTRY %in% c("BURMA", "CAMBODIA", "THAILAND", "GMS REGION")))
+    
   str(fin_df)
 
   unique(fin_df$COUNTRY)
@@ -87,9 +91,20 @@ fetch_tags()%>%
     group_by(COUNTRY, FISCAL_YEAR) %>% 
       summarise(total = sum(budget)) %>% 
     mutate(country_name = str_to_title(COUNTRY)) %>% 
-    rename(year = FISCAL_YEAR)
+    rename(year = FISCAL_YEAR) %>% 
+    ungroup() %>% 
+    mutate(COUNTRY = fct_reorder(COUNTRY, -total))
 
+ggplot(fin_sum, aes(x = year, y = total)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~COUNTRY) + 
+  theme_basic() +
+  scale_x_continuous(limits = c(2006, 2016)) +
+  scale_y_continuous(label = dollar_format())
 
+ 
+  
   # Next step will be aligning the data for each country by year.
   map(list(cmorbid, fin_sum), ~ names(.))
 
