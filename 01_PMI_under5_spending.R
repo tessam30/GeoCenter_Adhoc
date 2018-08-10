@@ -6,6 +6,7 @@
 # install.packages("devtools")
 #devtools::install_github("murphy-xq/fetchdhs")
 library(fetchdhs)
+library(tidyverse)
 library(purrr)
 library(llamar)
 library(scales)
@@ -17,7 +18,6 @@ source("DHS_country_list.R")
 # What is the crosswalk? 75 is Child mortality tag_id
 fetch_tags()%>% 
   filter(str_detect(tag_name,  "Mortality"))
-
 
 # Convert the list of country codes for Afriac to a vector to pass to DHS function call
   dhs_ids <- country_list %>% 
@@ -70,8 +70,22 @@ fetch_tags()%>%
     arrange(country_name, survey_year) %>% 
     rename(year = survey_year, 
            child_mortality = value) %>% 
-    mutate(year = as.numeric(year))
+    mutate(year = as.numeric(year)) %>% 
+    group_by(country_name) %>% 
+    mutate(dp_count = n()) %>% 
+    ungroup()
   str(cmorbid)
+  
+  # How many data points per country?
+  cmorbid %>% 
+    filter(dp_count != 1) %>% 
+    mutate(country = fct_reorder(country_name, -child_mortality)) %>% 
+    ggplot(., aes(x = year, y = child_mortality)) + 
+    geom_line() +
+    geom_point() +
+    facet_wrap(~country) +
+    theme_ygrid() + scale_y_continuous(breaks = c(50, 100, 150, 200)) 
+  
 
   # Now read in the financial data -- Need better name for file.
   fin_df <- read_tsv(file.path(datapath, "20180806.csv")) %>% 
@@ -93,15 +107,16 @@ fetch_tags()%>%
     mutate(country_name = str_to_title(COUNTRY)) %>% 
     rename(year = FISCAL_YEAR) %>% 
     ungroup() %>% 
-    mutate(COUNTRY = fct_reorder(COUNTRY, -total))
+    mutate(COUNTRY = fct_reorder(COUNTRY, -total), 
+           total_mil = total/1e6)
 
-ggplot(fin_sum, aes(x = year, y = total)) +
+ggplot(fin_sum, aes(x = year, y = total_mil)) +
   geom_col() +
   coord_flip() +
   facet_wrap(~COUNTRY) + 
-  theme_basic() +
+  theme_xgrid() +
   scale_x_continuous(limits = c(2006, 2016)) +
-  scale_y_continuous(label = dollar_format())
+  scale_y_continuous(label = unit_format(unit = "M"))
 
  
   
