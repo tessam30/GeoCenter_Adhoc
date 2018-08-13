@@ -39,7 +39,6 @@ data <- c("West Africa_Enabling Environment Scorecard Mockup.xlsx")
 
 
 # Export and expand -------------------------------------------------------
-
   write_csv(df_shaped, file.path(datapath, "WAEES_data_2018_0808.csv"))
 
 
@@ -52,7 +51,6 @@ data <- c("West Africa_Enabling Environment Scorecard Mockup.xlsx")
     facet_wrap(~ metric) 
 
 # One quick PCA to see if it even makes sense -- too much missing data
-
   df_pca <-  
     df_shaped %>% 
     select(-percent_rank) %>% 
