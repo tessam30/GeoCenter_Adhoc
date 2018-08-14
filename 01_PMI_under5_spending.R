@@ -73,13 +73,13 @@ fetch_tags()%>%
            child_mortality = value) %>% 
     mutate(year = as.numeric(year)) %>% 
     group_by(country_name) %>% 
-    mutate(dp_count = n()) %>% 
+    mutate(data_points = n()) %>% 
     ungroup()
   str(cmorbid)
   
   # How many data points per country?
   cmorbid %>% 
-    filter(dp_count != 1) %>% 
+    filter(data_points != 1) %>% 
     mutate(country = fct_reorder(country_name, -child_mortality)) %>% 
     ggplot(., aes(x = year, y = child_mortality)) + 
     geom_line() +
@@ -103,7 +103,6 @@ fetch_tags()%>%
   
   fin_sum <- 
     fin_df %>% 
-    
     # Replace any permutation of Tanzania with a single value for roll-ups
     mutate(COUNTRY = gsub("TANZANIA.*", "TANZANIA", COUNTRY, perl=TRUE)) %>% 
     group_by(COUNTRY, FISCAL_YEAR) %>% 
@@ -112,15 +111,18 @@ fetch_tags()%>%
     rename(year = FISCAL_YEAR) %>% 
     ungroup() %>% 
     mutate(COUNTRY = fct_reorder(COUNTRY, -total), 
-           total_mil = total/1e6)
+           total_mil = total/1e6, 
+           country_name = ifelse(country_name == "Drc", "Congo Democratic Republic", country_name),
+           flag = 1)
 
-ggplot(fin_sum, aes(x = year, y = total_mil)) +
-  geom_col() +
-  coord_flip() +
-  facet_wrap(~country_name) + 
-  theme_xgrid() +
-  scale_x_continuous(limits = c(2006, 2016)) +
-  scale_y_continuous(label = unit_format(unit = "M")) 
+  
+  ggplot(fin_sum, aes(x = year, y = total_mil)) +
+    geom_col() +
+    coord_flip() +
+    facet_wrap(~COUNTRY) + 
+    theme_xgrid() +
+    scale_x_continuous(limits = c(2006, 2016)) +
+    scale_y_continuous(label = unit_format(unit = "M")) 
   
   # Next step will be aligning the data for each country by year.
   map(list(cmorbid, fin_sum), ~ names(.))
@@ -137,8 +139,28 @@ ggplot(fin_sum, aes(x = year, y = total_mil)) +
   wdi_countries <- c("AO", "BJ", "CD", "ET", "GH", "GN", "LR", "MG", "MW", "ML", "MZ", 
                      "NG", "RW", "SN", "TZ", "ZM", "ZW")
   
-  pmi_pop <- WDI(country = wdi_countries, indicator = c("SP.POP.TOTL"), 
-                 start = 2006, end = 2016)
-
   # Fix country names to be consistent with PMI
-  
+  # DRC == Congo, Dem. Rep. == Congo Democratic Republic
+  pmi_pop <- WDI(country = wdi_countries, indicator = c("SP.POP.TOTL"), 
+                 start = 2002, end = 2016) %>% 
+    mutate(country_name = ifelse(country == "Congo, Dem. Rep.", 
+                                 "Congo Democratic Republic",
+                                 country)) %>% 
+    rename(population = SP.POP.TOTL)
+  str(pmi_pop)
+
+
+# Combine datasets and deflate totals by population -----------------------
+
+ pmi_totals_pc <- 
+    pmi_mort %>% 
+    full_join(., pmi_pop, by = c("country_name", "year")) %>% 
+    arrange(country_name, year) %>% 
+    mutate(total_pc = total / population)
+
+  #plot results on a scatter
+  pmi_totals_pc %>% 
+    filter(flag == 1) %>% 
+  ggplot(., aes(x = total_pc, y = child_mortality)) +
+    geom_point(aes(colour = country_name)) +
+    facet_wrap(~year)
