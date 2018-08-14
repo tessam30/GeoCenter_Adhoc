@@ -9,6 +9,9 @@ pacman::p_load("tidyverse", "lubridate", "sf", "extrafont", "readxl")
 dir.create("Data")
 datapath <- "Data"
 
+dir.create("Talbeau")
+vizpath <- "Tableau"
+
 
 # Fix time zone issues
 Sys.setenv(TZ = "America/New_York")
