@@ -10,6 +10,7 @@ library(tidyverse)
 library(purrr)
 library(llamar)
 library(scales)
+library(WDI)
 source("DHS_country_list.R")
 
 # PUll out all child mortality data for Africa
@@ -102,8 +103,11 @@ fetch_tags()%>%
   
   fin_sum <- 
     fin_df %>% 
+    
+    # Replace any permutation of Tanzania with a single value for roll-ups
+    mutate(COUNTRY = gsub("TANZANIA.*", "TANZANIA", COUNTRY, perl=TRUE)) %>% 
     group_by(COUNTRY, FISCAL_YEAR) %>% 
-      summarise(total = sum(budget)) %>% 
+    summarise(total = sum(budget)) %>% 
     mutate(country_name = str_to_title(COUNTRY)) %>% 
     rename(year = FISCAL_YEAR) %>% 
     ungroup() %>% 
@@ -113,12 +117,10 @@ fetch_tags()%>%
 ggplot(fin_sum, aes(x = year, y = total_mil)) +
   geom_col() +
   coord_flip() +
-  facet_wrap(~COUNTRY) + 
+  facet_wrap(~country_name) + 
   theme_xgrid() +
   scale_x_continuous(limits = c(2006, 2016)) +
-  scale_y_continuous(label = unit_format(unit = "M"))
-
- 
+  scale_y_continuous(label = unit_format(unit = "M")) 
   
   # Next step will be aligning the data for each country by year.
   map(list(cmorbid, fin_sum), ~ names(.))
@@ -126,6 +128,17 @@ ggplot(fin_sum, aes(x = year, y = total_mil)) +
   pmi_mort <- full_join(cmorbid, fin_sum, by = c("country_name", "year")) %>% 
     arrange(country_name, year)
 
-  
-  
 
+# WDI population indicators -----------------------------------------------
+  
+  world <-  WDI(country="all", indicator=c("SP.POP.TOTL"),
+      start=2017, end=2018)
+
+  wdi_countries <- c("AO", "BJ", "CD", "ET", "GH", "GN", "LR", "MG", "MW", "ML", "MZ", 
+                     "NG", "RW", "SN", "TZ", "ZM", "ZW")
+  
+  pmi_pop <- WDI(country = wdi_countries, indicator = c("SP.POP.TOTL"), 
+                 start = 2006, end = 2016)
+
+  # Fix country names to be consistent with PMI
+  
