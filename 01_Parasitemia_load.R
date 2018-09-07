@@ -31,7 +31,7 @@ source("DHS_country_list.R")
     as.list(.) %>%
     unlist()
 
-  set_return_fields(c("Indicator", "CountryName", "SurveyYear", "SurveyType", "Value"))
+  #set_return_fields(c("Indicator", "CountryName", "SurveyYear", "SurveyType", "Value"))
   #ML_PMAL_C_RDT
 
 # Returns a list of values
@@ -39,7 +39,7 @@ dhs_api <-
   fetch_data(
     countries = dhs_ids,
     indicators = c("ML_PMAL_C_RDT"),
-    years = 2006:2018,
+    years = 2004:2018,
     breakdown_level = "subnational"
   )
 

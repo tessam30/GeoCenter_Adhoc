@@ -9,6 +9,9 @@ pacman::p_load("tidyverse", "lubridate", "sf", "extrafont", "readxl")
 dir.create("Data")
 datapath <- "Data"
 
+dir.create("Data_export")
+dataexport <- "Data_export"
+
 dir.create("Talbeau")
 vizpath <- "Tableau"
 
