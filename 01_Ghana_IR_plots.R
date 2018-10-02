@@ -1,6 +1,6 @@
 # Import Excel data for PMI, reshape and plot as bars
 # Date: 2018_10_01
-# Authore: Tim Essam
+# Author: Tim Essam
 # Audience: GeoCenter
 
 
@@ -34,10 +34,10 @@ df_long <-
 # First, let's test the colors
 df_long %>% 
   filter(!is.na(effectiveness)) %>% 
-ggplot(., aes(x = ADM2, y = effectiveness, fill = hex)) +
+ggplot(., aes(x = drug, y = effectiveness, fill = hex)) +
   geom_col() +
   coord_flip() +
-  facet_wrap(~drug) +
+  facet_wrap(~ ADM2) +
   scale_fill_identity()
 
 
