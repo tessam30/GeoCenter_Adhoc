@@ -9,6 +9,7 @@
 # What is loadedin the session?
 library(ggthemes)
 library(llamar)
+library(scales)
 sessionInfo()
 
 df <- read_excel(file.path(datapath, "GHANA_IR_Updated.xlsx"), sheet = "GH_ITN_Resistance")
@@ -23,7 +24,9 @@ df_long <-
   df %>% 
   gather(., MinMort:PE_PBOControl, key = "drug", value = "effectiveness") %>% 
   left_join(., colors, by = c("drug" = "Drug"))%>% 
-  mutate(hex = ifelse(drug == "MinMort", "#d2d2d2", hex)) 
+  mutate(hex = ifelse(drug == "MinMort", "#d2d2d2", hex),
+         label = percent(round(effectiveness, 2)),
+         effness_zeros = ifelse(is.na(effectiveness), 0, effectiveness))  
 
 # Set the colors for each category -- done using scale_fill_identity()
 # Need to build a function to rapidly iterate through all the levels of ADM2, 
@@ -32,10 +35,10 @@ df_long <-
 # First, let's test the colors
 df_long %>% 
   filter(!is.na(effectiveness)) %>% 
-ggplot(., aes(x = drug, y = effectiveness, fill = hex)) +
+ggplot(., aes(x = ADM2, y = effectiveness, fill = hex)) +
   geom_col() +
   coord_flip() +
-  facet_wrap(~ ADM2) +
+  facet_wrap(~ drug) +
   scale_fill_identity()
 
 
@@ -84,24 +87,34 @@ pwalk(plots, ggsave, path = file.path(datapath))
 drug_plots <- df_long %>% 
   filter(!is.na(effectiveness)) %>%  
   filter(drug != "MinMort") %>% 
-  mutate(ADM2_sort = factor(ADM2)) %>% 
+  mutate(ADM2_sort = factor(ADM2), 
+         drug_name = drug) %>% 
   group_by(drug) %>% 
   nest() %>% 
-  mutate(plot = map(data, ~ggplot(., aes(x = fct_reorder(ADM2_sort, effectiveness, desc = "TRUE"), 
+  mutate(plot = map(data, ~ggplot(., aes(x = fct_reorder(ADM2_sort, effness_zeros, desc = "TRUE"), 
                              y = effectiveness, fill = hex)) +
-           geom_col() +
+           geom_col(position = "dodge") +
            scale_fill_identity() + 
            scale_y_continuous(limits = c(0, 1), labels = scales::percent)+
            coord_flip() +
-           labs(x = "", y = "") +
-           ggtitle(str_c(drug, " effectiveness by Admin 2")) +
-           theme_tufte()),
+           labs(x = "", y = "", title = .$drug_name) +
+            geom_text(aes(label = label),
+                      colour = grey50K, 
+                      position=position_dodge(width=0.2),
+                      hjust = -0.25, 
+                      family="Lato Light") +
+             geom_hline(aes(yintercept = 0.85), 
+                        colour = grey50K, 
+                        linetype ="dotted") +
+             theme_yaxis()),
   filename = str_c(drug, ".png")) %>% 
   select(filename, plot)
 
 pwalk(drug_plots, ggsave, path = file.path(datapath))       
          
-         
+write_csv(df_long, file.path(datapath, "Ghana_IR_plots.csv"))
+
+
 
   
 
