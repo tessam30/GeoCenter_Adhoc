@@ -19,8 +19,6 @@ colors <-
   colors %>%  
   mutate(hex = rgb(red = Red, green = Green, blue = Blue, maxColorValue = 255))
  
-
-
 df_long <- 
   df %>% 
   gather(., MinMort:PE_PBOControl, key = "drug", value = "effectiveness") %>% 
@@ -82,7 +80,30 @@ plots <- df_long %>%
 
 pwalk(plots, ggsave, path = file.path(datapath))
 
+# Make similar plots except change the pivot point to be the drug effectiveness sorted by district
+drug_plots <- df_long %>% 
+  filter(!is.na(effectiveness)) %>%  
+  filter(drug != "MinMort") %>% 
+  mutate(ADM2_sort = factor(ADM2)) %>% 
+  group_by(drug) %>% 
+  nest() %>% 
+  mutate(plot = map(data, ~ggplot(., aes(x = fct_reorder(ADM2_sort, effectiveness, desc = "TRUE"), 
+                             y = effectiveness, fill = hex)) +
+           geom_col() +
+           scale_fill_identity() + 
+           scale_y_continuous(limits = c(0, 1), labels = scales::percent)+
+           coord_flip() +
+           labs(x = "", y = "") +
+           ggtitle(str_c(drug, " effectiveness by Admin 2")) +
+           theme_tufte()),
+  filename = str_c(drug, ".png")) %>% 
+  select(filename, plot)
 
+pwalk(drug_plots, ggsave, path = file.path(datapath))       
+         
+         
+
+  
 
 
 
