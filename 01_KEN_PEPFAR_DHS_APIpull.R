@@ -8,7 +8,6 @@ library(fetchdhs)
 library(tidyverse)
 library(purrr)
 
-
 # Better yet, return all indicators with stunting in the definition
   fetch_indicators() %>% 
     filter(str_detect(definition, "stunt")) %>% 
