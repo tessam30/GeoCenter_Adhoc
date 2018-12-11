@@ -76,8 +76,16 @@ plots <- df_long %>%
                       scale_y_continuous(limits = c(0, 1), labels = scales::percent)+
                       coord_flip() +
                       labs(x = "", y = "") +
+                      geom_text(aes(label = label),
+                                colour = grey50K, 
+                                position=position_dodge(width=0.2),
+                                hjust = -0.25, 
+                                family="Lato Light") +
                       theme(axis.ticks = element_blank()) +
-                      theme_tufte()), 
+                      geom_hline(aes(yintercept = 0.85), 
+                                 colour = grey50K, 
+                                 linetype ="dotted") +
+                      theme_yaxis()), 
          filename = str_c(ADM2, ".png")) %>% 
   select(filename, plot)
 
@@ -85,7 +93,7 @@ pwalk(plots, ggsave, path = file.path(datapath))
 
 # Make similar plots except change the pivot point to be the drug effectiveness sorted by district
 drug_plots <- df_long %>% 
-  filter(!is.na(effectiveness)) %>%  
+  # filter(!is.na(effectiveness)) %>%  
   filter(drug != "MinMort") %>% 
   mutate(ADM2_sort = factor(ADM2), 
          drug_name = drug) %>% 
@@ -93,7 +101,7 @@ drug_plots <- df_long %>%
   nest() %>% 
   mutate(plot = map(data, ~ggplot(., aes(x = fct_reorder(ADM2_sort, effness_zeros, desc = "TRUE"), 
                              y = effectiveness, fill = hex)) +
-           geom_col(position = "dodge") +
+           geom_col(position = position_dodge(preserve = "single")) +
            scale_fill_identity() + 
            scale_y_continuous(limits = c(0, 1), labels = scales::percent)+
            coord_flip() +
@@ -106,11 +114,13 @@ drug_plots <- df_long %>%
              geom_hline(aes(yintercept = 0.85), 
                         colour = grey50K, 
                         linetype ="dotted") +
+             annotate("text", y = 0.72, x = 1, label = "85% target rate", 
+                      family ="Lato Light", colour = grey50K) +
              theme_yaxis()),
   filename = str_c(drug, ".png")) %>% 
   select(filename, plot)
 
-pwalk(drug_plots, ggsave, path = file.path(datapath))       
+pwalk(drug_plots, ggsave, path = file.path(datapath)) 
          
 write_csv(df_long, file.path(datapath, "Ghana_IR_plots.csv"))
 
