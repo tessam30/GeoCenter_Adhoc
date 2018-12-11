@@ -18,4 +18,3 @@ vizpath <- "Tableau"
 
 # Fix time zone issues
 Sys.setenv(TZ = "America/New_York")
-a
