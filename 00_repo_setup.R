@@ -12,6 +12,9 @@ datapath <- "Data"
 dir.create("Data_export")
 dataexport <- "Data_export"
 
+dir.create("Graphs")
+graphpath <- "Graphs"
+
 dir.create("Talbeau")
 vizpath <- "Tableau"
 
