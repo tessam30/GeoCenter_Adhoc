@@ -13,6 +13,9 @@ library(gganimate)
 
 source("ffp_shipping_ports.R")
 
+# Map the world + all data
+world <- map_data("world")
+
 df  <- read_excel(file.path(datapath, "FY18 Shipment Report DATA.xlsx"), sheet = "FY 2018")
 ls.str(df)
 
@@ -104,7 +107,7 @@ ggplot() +
             ylim = c(-50, 50)) +
   theme(legend.position = "top") 
 
-  ggsave("FFP_ocean_costs.pdf",
+  ggsave(file.path(graphpath, "FFP_ocean_costs.pdf"),
          plot = last_plot(), 
          width = 14, height = 8,
          units = "in",
@@ -125,11 +128,11 @@ ggplot() +
                  size = (metric_tons_ports/10000)), 
              color = "#1a1a1a", 
              alpha = 0.9,
-             shape=21, 
+             shape = 21, 
              stroke = 1) + 
   theme(legend.position = "top")
 
-ggsave("FFP_metric_tons.pdf",
+ggsave(file.path(graphpath, "FFP_metric_tons.pdf"),
        plot = last_plot(), 
        width = 14, height = 8,
        units = "in",
@@ -153,16 +156,12 @@ ggplot(ffp_ports_monthly) +
   facet_wrap(~month_year) +
   theme(legend.position = "top")
 
-ggsave("FFP_shipments_by_month.pdf",
+ggsave(file.path(graphpath, "FFP_shipments_by_month.pdf"),
        plot = last_plot(), 
        width = 14, height = 8,
        units = "in",
        dpi = 320)
 
-
-
-# Map the world + all data
-world <- map_data("world")
 ggplot() +
   geom_polygon(data = world,  aes(long, lat, group = group), fill = "grey") + 
   geom_point(data = ffp_ports, aes(`Discharge Port Longitude`, 
