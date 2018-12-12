@@ -101,7 +101,14 @@ ggplot() +
   scale_fill_gradientn(colours = RColorBrewer::brewer.pal(9, 'Greens'),
                                                labels = scales::number) +
   coord_map("gilbert", xlim = c(-125, 125),
-            ylim = c(-50, 50))
+            ylim = c(-50, 50)) +
+  theme(legend.position = "top") 
+
+  ggsave("FFP_ocean_costs.pdf",
+         plot = last_plot(), 
+         width = 14, height = 8,
+         units = "in",
+         dpi = 320)
 
 # Map with polygons - Shipping volume
 ggplot() +
@@ -119,12 +126,18 @@ ggplot() +
              color = "#1a1a1a", 
              alpha = 0.9,
              shape=21, 
-             stroke = 1)
+             stroke = 1) + 
+  theme(legend.position = "top")
 
+ggsave("FFP_metric_tons.pdf",
+       plot = last_plot(), 
+       width = 14, height = 8,
+       units = "in",
+       dpi = 320)
 
   
 # Month maps with facets
-tmp <- ggplot(ffp_ports_monthly) +
+ggplot(ffp_ports_monthly) +
   geom_polygon(data = world,  aes(long, lat, group = group), fill = "#bababa") + 
   geom_curve(data = ffp_ports_monthly, aes(x = orig_lon,
                  y = orig_lat,
@@ -138,12 +151,13 @@ tmp <- ggplot(ffp_ports_monthly) +
              aes(`Discharge Port Longitude`, `Discharge Port Latitude`,
                  colour = `Geographic Region`) , size = 1) +
   facet_wrap(~month_year) +
-  theme(legend.position = "top") +
-  labs(title = 'month_year: {frame_time}') +
-  transition_time(month_year)
+  theme(legend.position = "top")
 
-animate(tmp, nframes = 11, fps = 2)
-
+ggsave("FFP_shipments_by_month.pdf",
+       plot = last_plot(), 
+       width = 14, height = 8,
+       units = "in",
+       dpi = 320)
 
 
 
