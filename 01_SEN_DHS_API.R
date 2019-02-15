@@ -45,7 +45,7 @@ stunting <-
 
 # Split into two dataframes based on year
 df_list <-
-  split(stunting, stunting$survey_year)
+  split(stunting, .$survey_year)
 
 # List the names in the dataframe list -- these correspond to each year
 names(df_list) 
