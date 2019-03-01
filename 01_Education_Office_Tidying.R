@@ -8,6 +8,9 @@
 library(tidyverse)
 library(readxl)
 library(data.table)
+library(ggmap)
+library(mapdata)
+library(maptools)
 
 excel_sheets(file.path(datapath, "Education Sector Learning Inventory SpreadsheetV3- Revision Draft.xlsx"))
 
@@ -112,12 +115,57 @@ sample_df_long <-
       str_detect(place, c("global|Global")) ~ "Global",
       str_detect(place, "Afghanistan") ~ "Afghanistan",
       str_detect(place, "El Salvador") ~ "El Salvador",
-      str_detect(place, "DRC") ~ "Democratic Republic of Congo",
+      str_detect(place, "DRC|Democratic Republic of Congo") ~ "Democratic Republic of the Congo",
       str_detect(place, "Peru") ~ "Peru",
       str_detect(place, "South Sudan") ~ "South Sudan",
       str_detect(place, "Kyrgyz") ~ "Kyrgyzstan",
       str_detect(place, c("N/A|TBD")) ~ "Not available",
+      str_detect(place, "Syria") ~ "Syrian Arab Republic",
+      str_detect(place, "Vietname") ~ "Viet Nam",
+      str_detect(place, "Laos") ~ "Lao People's Democratic Republic",
+      str_detect(place, "Tanzania") ~ "United Republic of Tanzania",
       TRUE ~ as.character(place)
+      ),
+      place_flag = case_when(
+        place %like% c("Sub-Saharan Africa|Not Available|Middle East|LAC Region|Central America|Caribbean|Asia|Not available|Africa|Global|LAC Region") ~ 1,
+        TRUE ~ 0
       ))
     
-    tmp %>% group_by(place) %>% count() %>% print(n = Inf)
+    tmp %>% 
+      group_by(place, place_flag) %>% 
+      count() %>% 
+      arrange(desc(place_flag)) %>% 
+      print(n = Inf)
+
+  # Attempt to map out where the remaining projects are
+    #Non-joiners
+    # Ivory Coast - Cote d'Ivoire
+    # South Sudan
+    #  - Tajikistan
+    #  - Kyrgyzstan
+    #  Myanmar - Burma
+    #  West Bank? - West Bank Gaza
+    # Democratic Republic of the Congo
+    
+    
+   world <-  st_as_sf(wrld_simpl) # set world polygon boundaries as a join field
+    
+    map <-
+      tmp %>% 
+      left_join(., world, by = c("place" = "NAME")) %>% 
+      group_by(place) %>% 
+      mutate(count = n()) %>% 
+      ungroup() 
+    
+    map %>% 
+      ggplot() +
+      geom_sf(fill = "grey") +
+      geom_sf(aes(fill = count)) +
+      scale_fill_viridis_c()
+    
+    
+    intersect(tmp$place, wrld_simpl$NAME)
+    setdiff(tmp$place, wrld_simpl$NAME) # What countries do not join up
+    
+    
+    
