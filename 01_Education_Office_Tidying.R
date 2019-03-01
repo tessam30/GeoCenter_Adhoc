@@ -7,6 +7,7 @@
 
 library(tidyverse)
 library(readxl)
+library(data.table)
 
 excel_sheets(file.path(datapath, "Education Sector Learning Inventory SpreadsheetV3- Revision Draft.xlsx"))
 
@@ -82,7 +83,11 @@ sample_df <-
          q6 = `Question 6 (If applicable)`, 
          q7 = `Question 7 (If applicable)`, 
          q8 = `Question 8 (If applicable)`, 
-         other = `Other Additional Questions (If applicable)`)
+         other = `Other Additional Questions (If applicable)`) %>% 
+  mutate(country = ifelse(id == 35, "Cambodia,Nepal,Malawi", country),
+         country = ifelse(id == 75, "Asia,Africa, Middle East", country),
+         country = ifelse(id %in% c(65, 66), "Kyrgyzstan, Tajikistan", country),
+         country = ifelse(id == 5, "Peru", country))
 
 # First, let's spread out the country into proper columns and then reshape it
 library(splitstackshape)
@@ -99,6 +104,20 @@ sample_df_long <-
   select(id, product, country) %>% 
   cSplit("country", sep = ',', direction = "wide", drop = FALSE) %>% 
     gather("geography", "place", country_01:country_20) %>% 
-    filter(!is.na(place))
+    filter(!is.na(place)) %>% 
+    mutate(place = case_when(
+      place %like% c("Asia|Asia region|Asia Region") ~ "Asia",
+      place %like% c("and Nigeria") ~ "Nigeria",
+      place %like% c("WB/Gaza|West Bank|West Bank and Gaza|West Bank Gaza") ~ "West Bank Gaza",
+      str_detect(place, c("global|Global")) ~ "Global",
+      str_detect(place, "Afghanistan") ~ "Afghanistan",
+      str_detect(place, "El Salvador") ~ "El Salvador",
+      str_detect(place, "DRC") ~ "Democratic Republic of Congo",
+      str_detect(place, "Peru") ~ "Peru",
+      str_detect(place, "South Sudan") ~ "South Sudan",
+      str_detect(place, "Kyrgyz") ~ "Kyrgyzstan",
+      str_detect(place, c("N/A|TBD")) ~ "Not available",
+      TRUE ~ as.character(place)
+      ))
     
-    
+    tmp %>% group_by(place) %>% count() %>% print(n = Inf)
