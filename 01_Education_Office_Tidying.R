@@ -8,9 +8,7 @@
 library(tidyverse)
 library(readxl)
 library(data.table)
-library(ggmap)
-library(mapdata)
-library(maptools)
+
 
 excel_sheets(file.path(datapath, "Education Sector Learning Inventory SpreadsheetV3- Revision Draft.xlsx"))
 
@@ -102,6 +100,9 @@ sample_df <-
 
 # First, let's spread out the country into proper columns and then reshape it
 library(splitstackshape)
+library(ggmap)
+library(mapdata)
+library(maptools)
 
 sample_df_long <-
   sample_df %>%
@@ -159,7 +160,7 @@ educ %>%
 #  West Bank? - West Bank Gaza
 # Democratic Republic of the Congo
 
-
+data(wrld_simpl)
 world <- st_as_sf(wrld_simpl) # set world polygon boundaries as a join field
 
 # Determine if you need to change country names in the using dataset
