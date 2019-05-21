@@ -28,6 +28,10 @@ match_terms <- c("Indicator Name and Number:",
                  "Data Analysis:", "Data Review:", 
                  "Known Data Limitations")
 
+# Paste search terms in as vector using Data Pasta
+regex = paste(match_terms, collapse = "|")
+
+
 
 pirs_df <- 
   pirs_tbls %>% 
@@ -35,31 +39,15 @@ pirs_df <-
   filter(test %in% TRUE) %>% 
   select(V1) %>% 
   separate(V1, into = c("terms", "text"), sep = "[:]", extra = "merge" ) %>% 
-  mutate(text = str_squish(text))
-  
-  
-  
-  write_excel_csv(., file.path(datapath, "tmp_indicators.csv"))
+  mutate(text = str_trim(text, side = "left"),
+         flag = ifelse(terms %in% "Indicator Name and Number", 1, 0))
+
+  write_excel_csv(pirs_df, file.path(datapath, "tmp_indicators.csv"))
 
 
   
 
 
-# Paste search terms in as vector using Data Pasta
-
-regex = paste(match_terms, collapse="|")
 
 
-# Now, to iterate through each element of the list and see what words match, flag those entries and extract them into a flat file
-pirs_tbls[[1]] %>% mutate(test = grepl(regex, V1)) %>% print(n = Inf) %>% filter(test %in% "TRUE")
 
-pirs_tbls %>% 
-  map_df(~ .x %>% mutate_at(vars(V1), list(test = grepl(regex, V1))))
-
-tmp <- map_df(pirs_tbls, ~ mutate(.x, funs(test = grepl(regex, V1))))
-
-
-         ~mutate(test = grepl(regex, .xV1)))
-
-y %>% map(~ .x %>% mutate_at(vars(-X1), funs(case_when(is.na(.) ~ -9999, 
-                                                       TRUE ~ . ))))
