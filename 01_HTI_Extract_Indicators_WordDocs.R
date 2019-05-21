@@ -32,7 +32,6 @@ match_terms <- c("Indicator Name and Number:",
 regex = paste(match_terms, collapse = "|")
 
 
-
 pirs_df <- 
   pirs_tbls %>% 
   mutate(test = grepl(regex, V1)) %>% 
