@@ -2,6 +2,7 @@
 # Author: Tim Essam, GeoCenter
 # Date: 2019_08_14
 # Notes: List of countries for inclusion included in email
+# https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
 
 # Notes: package load order may vary depending on when this file is executed. Maps package naturally masks the map function from purrr so be aware of loading order!
 # 
