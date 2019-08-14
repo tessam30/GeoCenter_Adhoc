@@ -58,7 +58,7 @@ custom_map <- function(df, title = "placeholder") {
   ggplot() +
     geom_sf(data = world, 
             fill = grey20K, colour = "#FFFFFF", size = 0.1) +
-    geom_sf(data = df, fill = grey50K, colour = "#FFFFFF", size = 0.1) +
+    geom_sf(data = df, fill = grey40K, colour = "#FFFFFF", size = 0.1) +
     geom_sf_text(data = df, aes(label = ID),
                  check_overlap = TRUE,
                  family = "Lato Light",
