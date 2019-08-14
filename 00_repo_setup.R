@@ -4,7 +4,8 @@
 # Load libraries and data -------------------------------------------------
 
 # INSTALL LIBRARIES - if first time, install pacman
-pacman::p_load("tidyverse", "lubridate", "sf", "extrafont", "readxl")
+pacman::p_load("tidyverse", "lubridate", "sf", "extrafont", "readxl",
+               "ggmap", "maps", "sf", "rgeos", "llamar")
 
 dir.create("Data")
 datapath <- "Data"
