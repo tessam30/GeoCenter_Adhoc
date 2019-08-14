@@ -47,8 +47,11 @@ asia_map %>% count(ID) %>% print(n = Inf)
 
 
 
-# Map with poloygons - Cost
+# Map with poloygons - 
 #coord_sf(crs = "+proj=laea +lat_0=4.4 +lon_0=133.2")
+
+
+# Reusable function to create the maps based on filtered sf object --------
 
 custom_map <- function(df, title = "placeholder") {
   ggplot() +
@@ -68,6 +71,9 @@ custom_map <- function(df, title = "placeholder") {
 
 indo_pac <- custom_map(indo_map, title = "Indo-Pacific Countries")  
 asia_reg <- custom_map(asia_map, title = "USAID Asia Region")
+
+
+# Write the products to pdf or svg depending on need ----------------------
 
 ggsave(file.path(graphpath, "Indo-Pacific Countries.pdf"),
        plot = indo_pac,
