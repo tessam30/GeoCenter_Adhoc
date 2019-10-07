@@ -30,7 +30,7 @@ names(world)
 
 
 world %>% 
-  filter(str_detect(sovereignt, "Tanz")) %>% 
+  #filter(str_detect(sovereignt, "Tanz")) %>% 
   count(sovereignt) %>% 
   print(n = Inf)
 
@@ -39,10 +39,15 @@ world %>%
 cdcs <- c("Ghana", "Egypt", "Honduras", "Indonesia", "Senegal", "East Timor", "Moldova", 
           "Armenia", "Kenya", "Madagascar", "Nigeria", "United Republic of Tanzania", "Kyrgyzstan", "Morocco", "Dominican Republic", "Mali")
 
+cdcs_GC <- c("Uganda", "Malawi", "Kenya", "Georgia")
+
 
 cdcs_map <- world %>% 
   filter(sovereignt %in% cdcs) %>% 
   mutate(sovereignt = ifelse(sovereignt == "United Republic of Tanzania", "Tanzania", sovereignt))
+
+cdcs_GC_map <- world %>% 
+  filter(sovereignt %in% cdcs_GC) 
 
 cdcs_map %>% count(sovereignt) 
 
@@ -71,6 +76,8 @@ custom_map <- function(df, title = "placeholder") {
 }
 
 cdcs_draft <- custom_map(cdcs_map, title = "CDCS Wave 2 Countries")  
+custom_map(cdcs_GC_map) + coord_sf(xlim = c(-0, 60),
+                                            ylim = c(-20, 50))
 cdcs_draft
 
 ggsave(file.path(graphpath, "CDCS_wave2_countries.png"),
