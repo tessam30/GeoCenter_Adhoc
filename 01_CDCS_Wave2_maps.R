@@ -9,50 +9,63 @@
 # library(ggmap)
 # library(tidyverse)
 # library(maps)
-# library(sf)
-# library(rgeos)
-# library(llamar)
-# library(extrafont)
+library(sf)
+library(rgeos)
+library(llamar)
+library(extrafont)
+
+library("rnaturalearth")
+library("rnaturalearthdata")
+
+
 
 
 
 # Prep world polygons as a sf object to filter and map --------------------
 world <- sf::st_as_sf(map('world2', plot = FALSE, fill = TRUE)) 
 
+world <- ne_countries(scale = "large", returnclass = "sf")
+class(world)
+names(world)
+
 
 world %>% 
-  count(ID) %>% 
+  filter(str_detect(sovereignt, "Tanz")) %>% 
+  count(sovereignt) %>% 
   print(n = Inf)
 
-# Initially, these stubs did not show up; Tuvalu appears to be missing from dataset
-world %>% 
-  filter(grepl(c("Lao|Marshall|Solom|Tuvalu|Vanu"), ID)) %>% 
-  count(ID)
 
 # List of provided countries for the Indo-Pacific Map
-cdcs <- c("Ghana", "Egypt", "Honduras", "Indonesia", "Senegal", "Timor-Leste", "Moldova", 
-          "Armenia", "Kenya", "Madagascar", "Nigeria", "Tanzania", "Kyrgyzstan", "Morocco", "Dominican Republic", "Mali")
+cdcs <- c("Ghana", "Egypt", "Honduras", "Indonesia", "Senegal", "East Timor", "Moldova", 
+          "Armenia", "Kenya", "Madagascar", "Nigeria", "United Republic of Tanzania", "Kyrgyzstan", "Morocco", "Dominican Republic", "Mali")
 
 
 cdcs_map <- world %>% 
-  filter(ID %in% cdcs) 
+  filter(sovereignt %in% cdcs) %>% 
+  mutate(sovereignt = ifelse(sovereignt == "United Republic of Tanzania", "Tanzania", sovereignt))
 
-cdcs_map %>% count(ID)
+cdcs_map %>% count(sovereignt) 
+
+# Bounding box
+cdcs_map %>% st_bbox()  %>% st_crs()
 
 
+crs <- "+proj=latlong +datum=WGS84 +pm=madrid"
 
 custom_map <- function(df, title = "placeholder") {
   ggplot() +
     geom_sf(data = world, 
-            fill = grey20K, colour = "#FFFFFF", size = 0.1) +
-    geom_sf(data = df, fill = grey40K, colour = "#FFFFFF", size = 0.1) +
-    geom_sf_text(data = df, aes(label = ID),
-                 check_overlap = TRUE,
-                 family = "Lato Light",
-                 colour = grey90K) +
-    #coord_sf(xlim = c(-150, 150),
-     #       ylim = c(-55, 55)) +
-    #theme_basic() +
+            fill = grey10K, colour = "#FFFFFF", size = 0.1) +
+    geom_sf(data = df, fill = grey30K, colour = "#FFFFFF", size = 0.1) +
+    geom_sf_text(data = df, aes(label = sovereignt),
+                  check_overlap = TRUE,
+                  family = "Lato Light",
+                  colour = grey90K) +
+    coord_sf(xlim = c(-100, 150),
+             ylim = c(-35, 65)) +
+    labs(x = "", y = "") +
+    #coord_sf(crs = crs) +
+    theme_basic() +
     theme(panel.background = element_rect(fill = "aliceblue")) +
     labs(title = title)
 }
@@ -60,4 +73,11 @@ custom_map <- function(df, title = "placeholder") {
 cdcs_draft <- custom_map(cdcs_map, title = "CDCS Wave 2 Countries")  
 cdcs_draft
 
-ggplot(cdcs_map) + geom_sf(data = world)
+ggsave(file.path(graphpath, "CDCS_wave2_countries.png"),
+       plot = cdcs_draft,
+       device = "png",
+       width = 11.5, 
+       height = 8,
+       units = "in",
+       dpi = "retina")
+
