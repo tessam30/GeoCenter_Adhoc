@@ -88,3 +88,35 @@ ggsave(file.path(graphpath, "CDCS_wave2_countries.png"),
        units = "in",
        dpi = "retina")
 
+
+# GIS Specialists coverage ------------------------------------------------
+
+gis_spec <- c("Haiti", "Honduras",
+              "Colombia", "Senegal",
+              "Mali", "Liberia",
+              "Ivory Coast", "Ghana",
+              "Nigeria", "Democratic Republic of the Congo", 
+              "Uganda", "Kenya",
+              "Malawi", "Mozambique",
+              "South Africa", "Madagascar",
+              "Georgia", "West Bank",
+              "Lebanon", "Egypt",
+              "Jordan", "Afghanistan",
+              "Pakistan", "Nepal", "Bangladesh",
+              "Indonesia", "United States of America")
+
+
+gis_spec_map <- world %>% 
+  filter(sovereignt %in% gis_spec) 
+
+gis_spec_map_graph <- custom_map(gis_spec_map)
+
+ggsave(file.path(graphpath, "GIS_specialists_network.pdf"),
+       plot = gis_spec_map_graph,
+       device = "pdf",
+       width = 11.5, 
+       height = 8,
+       units = "in",
+       dpi = "retina",
+       useDingbats = FALSE)
+
