@@ -5,14 +5,18 @@
 
 pacman::p_load(raster, sp, rgdal, RColorBrewer)
 
-dir(file.path(datapath, "TZ_package_all" ))
+dest_folder <- c("TZ_package_all")
+dir(file.path(datapath, dest_folder))
 
-file_list_mean <- as.list(list.files(file.path(datapath, "TZ_package_all"), pattern = "MEAN_v01.tif"))
-file_list_ci <- as.list(list.files(file.path(datapath, "TZ_package_all"), pattern = "CI_v01.tif"))
 
-mean_rasters <- purrr::map(file_list_mean, ~raster(file.path(datapath, "TZ_package_all", .)))
+file_list_mean <- as.list(list.files(file.path(datapath, dest_folder), pattern = "MEAN_v01.tif$"))
+file_list_ci <- as.list(list.files(file.path(datapath, dest_folder), pattern = "CI_v01.tif$"))
+
+mean_rasters <-  purrr::map(file_list_mean, ~raster(file.path(datapath, "TZ_package_all", .)))
+names(mean_rasters) <- file_list_mean %>% set_names()
+
 ci_rasters <- purrr::map(file_list_ci, ~raster(file.path(datapath, "TZ_package_all", .)))
-
+names(file_list_ci) <- file_list_ci %>% set_names()
 
 # Review the credible intervals before running through the model, may need to develop a list of thresholds
 # based on the layers. 
